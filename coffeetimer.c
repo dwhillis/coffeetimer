@@ -31,22 +31,23 @@ void loop() {
   char buffer[12];
 
   lcd.setCursor(0, 1);
+
   unsigned long seconds = diff/1000;
   if (seconds < 60) {
-      lcd.print(itoa(diff/1000, buffer, 10));
-      lcd.print("s ago    ");
+      lcd.print(itoa(seconds, buffer, 10));
+      lcd.print("s ago        ");
   }
   else if (seconds < 60 * 60) {
-      lcd.print(itoa(diff/1000/60, buffer, 10));
-      lcd.print("m ago    ");
+      lcd.print(itoa(seconds/60, buffer, 10));
+      lcd.print("m ago        ");
   }
   else if (seconds < 60 * 60 * 4) {
-      lcd.print(itoa(diff/1000/60/60, buffer, 10));
-      lcd.print("h ago    ");
+      lcd.print(itoa(seconds/60/60, buffer, 10));
+      lcd.print(seconds/60 % 60 > 30 ? ".5" : "");
+      lcd.print("h ago       ");
   }
   else {
     lcd.setBacklight(RED);
-    lcd.print(itoa(diff/1000/60/60, buffer, 10));
     lcd.print("Too long ago!    ");
   }
   
@@ -55,3 +56,4 @@ void loop() {
     lcd.setBacklight(GREEN);
   }
 }
+
