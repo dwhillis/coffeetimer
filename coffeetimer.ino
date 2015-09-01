@@ -16,12 +16,13 @@ Adafruit_RGBLCDShield lcd = Adafruit_RGBLCDShield();
 int lcd_key     = 0;
 int adc_key_in  = 0;
 
-unsigned long lastPress = 0;
+unsigned long lastPress = -1;
 
 void setup()
 {
   lcd.begin(16, 2);
   lcd.print("Coffee last made:");
+  Serial.begin(9600);          //  setup serial
 }
 
 void loop() {
@@ -31,9 +32,23 @@ void loop() {
   char buffer[12];
 
   lcd.setCursor(0, 1);
+  
+  int lightSensor = analogRead(0);    // read the input pin
 
   unsigned long seconds = diff/1000;
-  if (seconds < 60) {
+
+  if (lightSensor > 100 ) {
+      lastPress = now;
+  }
+
+  if (lastPress == -1) {
+      lcd.print("long ago? maybe.");
+  }
+  else if (seconds < 1) {
+      lcd.setBacklight(GREEN);
+      lcd.print("right now       ");
+  }
+  else if (seconds < 60) {
       lcd.print(itoa(seconds, buffer, 10));
       lcd.print("s ago        ");
   }
@@ -53,7 +68,6 @@ void loop() {
   
   if(buttons) {
     lastPress = now;
-    lcd.setBacklight(GREEN);
   }
 }
 
