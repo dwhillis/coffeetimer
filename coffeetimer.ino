@@ -75,11 +75,14 @@ long long getBrewDuration() {
 
 void endBrew(unsigned long now) {
   is_brewing = false;
-  brew_end = now;
-  brew_start = brew_start_temp;
   brewing_until = -1;
   lastPress = now;
   lcd.setBacklight(GREEN);
+  
+  if (brew_start_temp > 0) {
+    brew_end = now;
+    brew_start = brew_start_temp;  
+  }  
 }
 
 void startBrew(unsigned long now) {
