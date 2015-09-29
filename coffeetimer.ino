@@ -36,6 +36,7 @@ void setup()
 
 void loop() {
   unsigned long now = millis();
+  checkAndResetMillisOverflow(now);
   unsigned long diff = now - lastPress;
   unsigned long seconds = diff / 1000;
   
@@ -62,24 +63,34 @@ void loop() {
   }
 }
 
-long getBrewDuration() {
+/* 
+  Note: getBrewDuration() returns an 8 byte signed number because '-1' represents when 
+        the brew durationi is unknown. But it still needs to be able to return 4 bytes
+        of positive values, corresponding with the valid values for 'millis()'.
+        https://www.arduino.cc/en/Reference/Millis
+*/
+long long getBrewDuration() {
   return (brew_start < 0 || brew_end < 0) ? -1 : (brew_end - brew_start);
 }
 
 void endBrew(unsigned long now) {
   is_brewing = false;
-  brew_end = now;
-  brew_start = brew_start_temp;
   brewing_until = -1;
   lastPress = now;
   lcd.setBacklight(GREEN);
+  
+  if (brew_start_temp > 0) {
+    brew_end = now;
+    brew_start = brew_start_temp;  
+  }  
 }
 
 void startBrew(unsigned long now) {
   brew_start_temp = now;
   is_brewing = true;
 
-  long brewDuration = getBrewDuration();
+  // 'long long' is very intentional
+  long long brewDuration = getBrewDuration();
   brewing_until = brewDuration > 0 ? now + brewDuration : -1;
 }
 
@@ -160,6 +171,16 @@ void endIfReady(unsigned long seconds, unsigned long now) {
   }
   else {
     lcd.print("Still...        ");
+  }
+}
+
+void checkAndResetMillisOverflow(unsigned long now) {
+  if (now < lastPress) {  
+    lastPress = -1;
+    brew_start = -1;
+    brew_start_temp = -1;
+    brew_end = -1;
+    brewing_until = -1;
   }
 }
 
